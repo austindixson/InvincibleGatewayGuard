@@ -5,6 +5,13 @@
   "displayName": "InvincibleGatewayGuard",
   "description": "Ensures OpenClaw gateway auth consistency. Use when checking or fixing gateway token/password mismatch, device_token_mismatch errors, or before delegating to sub-agents. Writes gateway.auth to openclaw.json only when incorrect.",
   "author": "RuneweaverStudios",
-  "tags": [],
+  "tags": [
+    "gateway",
+    "auth",
+    "security",
+    "daemon",
+    "persistence",
+    "openclaw"
+  ],
   "platform": "openclaw"
 }
