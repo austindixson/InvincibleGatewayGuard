@@ -59,6 +59,16 @@ Edit `config.json` in the skill root to customize behavior:
 | `restart_wait_sec` | `2.0` | Seconds to wait after restart before checking status |
 | `command_timeout_sec` | `8` | Default timeout for subprocess commands |
 
+## Guard State File Format
+
+The guard maintains an optional state file at `logs/gateway-guard.state.json` within the skill directory. This JSON file tracks the last known gateway status, including fields such as `lastCheck` (ISO 8601 timestamp), `pid` (integer process ID of the gateway), `authMode` ("token" or "password"), `secretHash` (SHA-256 hash of the current secret for comparison without storing plaintext), and `status` ("ok" or "mismatch"). The state file is written atomically (write-to-temp then rename) to prevent corruption if the process is interrupted mid-write. If the state file is missing or unreadable, the guard falls back to a live process check via `lsof` and treats the state as unknown.
+
+When the guard detects a mismatch between the running gateway and `openclaw.json`, it records the discrepancy in the state file along with a `reason` field describing what differs (e.g., "config token does not match running gateway token"). This allows orchestrators to read the state file for diagnostics without re-running the full check. The state file is never used as the source of truth for auth credentials; it is purely informational.
+
+## Recovery Procedures
+
+If the gateway enters a broken state (process running but not responding, or auth credentials out of sync), the recommended recovery sequence is: (1) run `status --json` to capture the current mismatch details, (2) run `ensure --apply` which will stop the existing gateway process (SIGTERM, then SIGKILL after `kill_timeout_sec`), update `openclaw.json` if needed, and restart the gateway with correct credentials, (3) verify recovery by running `status --json` again and confirming `ok: true`. If `ensure --apply` fails (e.g., the gateway process cannot be killed), check for zombie processes with `ps aux | grep openclaw` and manually terminate them before retrying. In environments where the gateway is managed by a LaunchAgent or systemd unit, stop the service manager unit first to prevent automatic restarts during recovery.
+
 ## Requirements
 
 - OpenClaw `openclaw.json` with `gateway.auth` (mode `token` or `password`) and `gateway.port`.
