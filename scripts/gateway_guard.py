@@ -20,7 +20,28 @@ import time
 from pathlib import Path
 
 
-def _run(cmd, timeout=8):
+def _load_config():
+    """Load optional config.json from the skill root directory."""
+    skill_dir = Path(__file__).resolve().parent.parent
+    config_path = skill_dir / "config.json"
+    if not config_path.exists():
+        return {}
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+_config = _load_config()
+_KILL_TIMEOUT = _config.get("kill_timeout_sec", 5)
+_RESTART_WAIT = _config.get("restart_wait_sec", 2.0)
+_CMD_TIMEOUT = _config.get("command_timeout_sec", 8)
+
+
+def _run(cmd, timeout=None):
+    if timeout is None:
+        timeout = _CMD_TIMEOUT
     return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
 
 
@@ -193,11 +214,16 @@ def _kill_pid(pid):
         return
     except PermissionError:
         return
-    time.sleep(0.7)
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return
+    # Wait for graceful shutdown before SIGKILL, configurable via config.json
+    wait_interval = 0.5
+    waited = 0.0
+    while waited < _KILL_TIMEOUT:
+        time.sleep(wait_interval)
+        waited += wait_interval
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return  # Process exited
     try:
         os.kill(pid, signal.SIGKILL)
     except OSError:
@@ -229,7 +255,7 @@ def _restart_gateway(port, mode, secret):
             start_new_session=True,
         )
 
-    time.sleep(2.0)
+    time.sleep(_RESTART_WAIT)
     status = gateway_runtime_status(port, mode, secret)
     if status.get("running") and status.get("pid"):
         _save_guard_state(status["pid"], mode, port, secret)

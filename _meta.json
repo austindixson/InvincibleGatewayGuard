@@ -38,5 +38,7 @@
       "openclaw.json (gateway.auth only when missing or incorrect)"
     ]
   },
-  "dependencies": []
+  "dependencies": [],
+  "main": "scripts/gateway_guard.py",
+  "license": "MIT"
 }

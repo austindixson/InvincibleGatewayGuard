@@ -1,5 +1,7 @@
 ---
 name: gateway-guard
+displayName: InvincibleGatewayGuard
+version: 1.0.0
 description: Ensures OpenClaw gateway auth consistency. Use when checking or fixing gateway token/password mismatch, device_token_mismatch errors, or before delegating to sub-agents. Writes gateway.auth to openclaw.json only when incorrect.
 ---
 
@@ -34,6 +36,28 @@ python3 <skill-dir>/scripts/gateway_guard.py ensure [--apply] [--json]
 ## JSON output (for orchestration)
 
 - **status --json** / **ensure --json**: `ok`, `secretMatchesConfig`, `running`, `pid`, `reason`, `recommendedAction`, `configPath`, `authMode`, `gatewayPort`. When not ok, `recommendedAction` is "run gateway_guard.py ensure --apply and restart client session".
+
+## Configuration
+
+Edit `config.json` in the skill root to customize behavior:
+
+```json
+{
+  "gateway_port": 18789,
+  "kill_timeout_sec": 5,
+  "auth_path": "gateway.auth",
+  "restart_wait_sec": 2.0,
+  "command_timeout_sec": 8
+}
+```
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `gateway_port` | `18789` | Default gateway port (overridden by openclaw.json) |
+| `kill_timeout_sec` | `5` | Seconds to wait after SIGTERM before SIGKILL |
+| `auth_path` | `gateway.auth` | Config key path for auth settings |
+| `restart_wait_sec` | `2.0` | Seconds to wait after restart before checking status |
+| `command_timeout_sec` | `8` | Default timeout for subprocess commands |
 
 ## Requirements
 

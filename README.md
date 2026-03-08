@@ -1,41 +1,27 @@
-# gateway-guard
+# InvincibleGatewayGuard
 
 **OpenClaw skill: keep gateway auth in sync with config.**
 
-Detects and fixes gateway auth drift (running process vs `openclaw.json`). Writes `gateway.auth` to config **only when it’s missing or wrong**, so you get a stable token and no unnecessary restarts.
+Detects and fixes gateway auth drift (running process vs `openclaw.json`). Writes `gateway.auth` to config **only when it's missing or wrong**, so you get a stable token and no unnecessary restarts.
 
 ## What it does
 
-- **Check** — `status` reports whether the gateway’s auth matches `openclaw.json`.
-- **Fix** — `ensure --apply` restarts the gateway with credentials from config and (if needed) writes correct auth to config once.
-- **Safe writes** — Only updates `gateway.auth` when incorrect; never overwrites a correct config.
+- **Check** -- `status` reports whether the gateway's auth matches `openclaw.json`.
+- **Fix** -- `ensure --apply` restarts the gateway with credentials from config and (if needed) writes correct auth to config once.
+- **Safe writes** -- Only updates `gateway.auth` when incorrect; never overwrites a correct config.
 
-Use it when you see `device_token_mismatch`, “Gateway auth issue”, or before delegating to sub-agents so the gateway is in a known-good state.
+Use it when you see `device_token_mismatch`, "Gateway auth issue", or before delegating to sub-agents so the gateway is in a known-good state.
 
 ## Install
 
-**From ClawHub (if published):**
-
 ```bash
-npm install -g clawhub
-clawhub install gateway-guard
+clawhub install invincible-gateway-guard
+# or:
+git clone https://github.com/RuneweaverStudios/InvincibleGatewayGuard.git
+cp -r InvincibleGatewayGuard ~/.openclaw/workspace/skills/
 ```
-
-**From GitHub:**
-
-```bash
-git clone https://github.com/YOUR_ORG/gateway-guard.git
-# Copy into your OpenClaw workspace:
-cp -r gateway-guard ~/.openclaw/workspace/skills/
-# Or link:
-ln -s /path/to/gateway-guard ~/.openclaw/workspace/skills/gateway-guard
-```
-
-**Manual:** Copy this folder into your OpenClaw workspace `skills/` directory (e.g. `~/.openclaw/workspace/skills/gateway-guard/`).
 
 ## Quick start
-
-From the skill directory or with absolute path:
 
 ```bash
 # Check (machine-readable)
@@ -45,63 +31,33 @@ python3 scripts/gateway_guard.py status --json
 python3 scripts/gateway_guard.py ensure --apply --json
 ```
 
-Use the **absolute path** when running from the TUI or another cwd:
+## Configuration
 
-```bash
-python3 ~/.openclaw/workspace/skills/gateway-guard/scripts/gateway_guard.py status --json
+Edit `config.json` to customize timeouts and ports:
+
+```json
+{
+  "gateway_port": 18789,
+  "kill_timeout_sec": 5,
+  "restart_wait_sec": 2.0,
+  "command_timeout_sec": 8
+}
 ```
 
 ## Requirements
 
-- OpenClaw `openclaw.json` with `gateway.auth` (token or password) and `gateway.port`.
-- `openclaw` CLI on PATH (for `ensure --apply`).
+- OpenClaw `openclaw.json` with `gateway.auth` (token or password) and `gateway.port`
+- `openclaw` CLI on PATH (for `ensure --apply`)
+- Python 3.6+
 
 ## Options
 
-| Command     | Options   | Description |
-|------------|-----------|-------------|
-| `status`   | `--json`  | Check consistency; exit 0 if ok, 1 if mismatch. |
-| `ensure`   | `--apply` | Fix by restarting gateway with config auth. |
-| `ensure`   | `--json`  | Emit JSON result for orchestration. |
-
-## GitHub repo
-
-1. Create a new repository (e.g. `gateway-guard`) on GitHub. Do **not** add a README or .gitignore (this skill has its own).
-2. From this skill directory (the repo root):
-
-   ```bash
-   git init
-   git add SKILL.md README.md scripts/ .gitignore
-   git commit -m "Initial gateway-guard skill"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_ORG/gateway-guard.git
-   git push -u origin main
-   ```
-
-3. Replace `YOUR_ORG` with your GitHub username or org. Others can install with:
-
-   ```bash
-   git clone https://github.com/YOUR_ORG/gateway-guard.git
-   cp -r gateway-guard ~/.openclaw/workspace/skills/
-   ```
-
-## ClawHub
-
-Publish so others can install with `clawhub install gateway-guard`:
-
-```bash
-npm install -g clawhub
-clawhub login   # if needed
-cd /path/to/gateway-guard   # this skill folder as root
-clawhub publish .
-```
-
-The skill slug will be `gateway-guard`. After publishing, users run:
-
-```bash
-clawhub install gateway-guard
-```
+| Command   | Options   | Description |
+|-----------|-----------|-------------|
+| `status`  | `--json`  | Check consistency; exit 0 if ok, 1 if mismatch |
+| `ensure`  | `--apply` | Fix by restarting gateway with config auth |
+| `ensure`  | `--json`  | Emit JSON result for orchestration |
 
 ## License
 
-MIT (or your choice).
+MIT
