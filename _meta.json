@@ -13,5 +13,30 @@
     "persistence",
     "openclaw"
   ],
-  "platform": "openclaw"
+  "platform": "openclaw",
+  "requires": {
+    "env": [
+      "OPENCLAW_HOME"
+    ],
+    "platform": {
+      "openclaw": {
+        "config": {
+          "gateway.auth": "Required: gateway auth mode (token or password) and credentials in openclaw.json",
+          "gateway.port": "Required: gateway port in openclaw.json"
+        }
+      }
+    },
+    "anyBins": [
+      "openclaw"
+    ]
+  },
+  "fileAccess": {
+    "read": [
+      "openclaw.json (gateway.auth, gateway.port)"
+    ],
+    "write": [
+      "openclaw.json (gateway.auth only when missing or incorrect)"
+    ]
+  },
+  "dependencies": []
 }
