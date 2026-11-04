@@ -17,7 +17,7 @@ Use it when you see `device_token_mismatch`, "Gateway auth issue", or before del
 ```bash
 clawhub install invincible-gateway-guard
 # or:
-git clone https://github.com/RuneweaverStudios/InvincibleGatewayGuard.git
+git clone https://github.com/austindixson/InvincibleGatewayGuard.git
 cp -r InvincibleGatewayGuard ~/.openclaw/workspace/skills/
 ```
 
